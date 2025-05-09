@@ -15,10 +15,14 @@ ${PREFIX:-URL_}DATABASE='\9'#")"
 PREFIX="DOLIBARR_DB" parse_url "$DATABASE_URL"
 
 # Separate host and port
-DOLI_DB_HOST="$(echo $DOLIBARR_DB_HOSTPORT | sed -E 's,:.*,,')"
-DOLI_DB_HOST_PORT="$(echo $DOLIBARR_DB_HOSTPORT | sed -E 's,.*:([0-9]+).*,\1,')"
-DOLI_DB_NAME="$DOLIBARR_DB_DATABASE"
-DOLI_DB_USER="$DOLIBARR_DB_USER"
-DOLI_DB_PASSWORD="$DOLIBARR_DB_PASSWORD"
+DOLIBARR_DB_HOST="$(echo $DOLIBARR_DB_HOSTPORT | sed -E 's,:.*,,')"
+DOLIBARR_DB_PORT="$(echo $DOLIBARR_DB_HOSTPORT | sed -E 's,.*:([0-9]+).*,\1,')"
+
+# Export database environment variables
+export DOLI_DB_HOST="$DOLIBARR_DB_HOST"
+export DOLI_DB_HOST_PORT="$DOLIBARR_DB_PORT"
+export DOLI_DB_NAME="$DOLIBARR_DB_DATABASE"
+export DOLI_DB_USER="$DOLIBARR_DB_USER"
+export DOLI_DB_PASSWORD="$DOLIBARR_DB_PASSWORD"
 
 exec /usr/local/bin/docker-run.sh $@

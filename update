@@ -21,7 +21,7 @@ if [ "v${RELEASE}" = $CURRENT_RELEASE ]; then
 fi
 
 # Replace "ARG" line in dockerfile with the new release
-sed -i "s#ENV DOLIBARR_VERSION.*#ENV DOLIBARR_VERSION=\"${RELEASE}\"#" Dockerfile
+sed -i "s#ARG DOLIBARR_VERSION.*#ARG DOLIBARR_VERSION=\"${RELEASE}\"#" Dockerfile
 
 # Replace README link to Dolibarr release
 DOLIBARR_BADGE="[![Dolibarr](https://img.shields.io/badge/Dolibarr-${RELEASE}-blue.svg)](https://github.com/Dolibarr/dolibarr/releases/tag/${RELEASE})"

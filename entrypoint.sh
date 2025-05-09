@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # Function to parse a URL into its components
 parse_url() {
@@ -12,13 +13,14 @@ ${PREFIX:-URL_}DATABASE='\9'#")"
 }
 
 # Parse the DATABASE_URL and extract components
-PREFIX="DOLIBARR_DB" parse_url "$DATABASE_URL"
+PREFIX="DOLIBARR_DB_" parse_url "$DATABASE_URL"
 
 # Separate host and port
 DOLIBARR_DB_HOST="$(echo $DOLIBARR_DB_HOSTPORT | sed -E 's,:.*,,')"
 DOLIBARR_DB_PORT="$(echo $DOLIBARR_DB_HOSTPORT | sed -E 's,.*:([0-9]+).*,\1,')"
 
 # Export database environment variables
+export DOLI_DB_TYPE="mysqli"
 export DOLI_DB_HOST="$DOLIBARR_DB_HOST"
 export DOLI_DB_HOST_PORT="$DOLIBARR_DB_PORT"
 export DOLI_DB_NAME="$DOLIBARR_DB_DATABASE"

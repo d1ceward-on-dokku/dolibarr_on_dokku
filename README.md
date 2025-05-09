@@ -2,123 +2,145 @@
 
 [![Dolibarr](https://img.shields.io/badge/Dolibarr-20.0.3-blue.svg)](https://github.com/Dolibarr/dolibarr/releases/tag/20.0.3)
 [![Dokku](https://img.shields.io/badge/Dokku-Repo-blue.svg)](https://github.com/dokku/dokku)
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/d1ceward/dolibarr_on_dokku/graphs/commit-activity)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/d1ceward-on-dokku/dolibarr_on_dokku/graphs/commit-activity)
+
 # Run Dolibarr on Dokku
 
-## Perquisites
+## Overview
 
-### What is Dolibarr?
+This guide explains how to deploy [Dolibarr](https://www.dolibarr.org/), a modern ERP and CRM software package, on a [Dokku](https://dokku.com/) host. Dokku is a lightweight PaaS that simplifies deploying and managing applications using Docker.
 
-[Dolibarr](https://www.dolibarr.org/) is a modern software package to manage your company or foundation's activity (contacts, suppliers, invoices, orders, stocks, agenda, accounting, ...).
+## Prerequisites
 
-### What is Dokku?
+Before proceeding, ensure you have the following:
 
-[Dokku](http://dokku.viewdocs.io/dokku/) is the smallest PaaS implementation you've ever seen - _Docker
-powered mini-Heroku_.
+- A working [Dokku host](https://dokku.com/docs/getting-started/installation/).
+- The [MariaDB plugin](https://github.com/dokku/dokku-mariadb) for database support.
+- (Optional) The [Let's Encrypt plugin](https://github.com/dokku/dokku-letsencrypt) for SSL certificates.
 
-### Requirements
-* A working [Dokku host](http://dokku.viewdocs.io/dokku/getting-started/installation/)
-* [MariaDB](https://github.com/dokku/dokku-mariadb) plugin for Dokku
-* [Letsencrypt](https://github.com/dokku/dokku-letsencrypt) plugin for SSL (optionnal)
+## Setup Instructions
 
-# Setup
+### 1. Create the App
 
-**Note:** Throughout this guide, we will use the domain `dolibarr.example.com` for demonstration purposes. Make sure to replace it with your actual domain name.
-
-## Create the app
-
-Log into your Dokku host and create the Dolibarr app:
+Log into your Dokku host and create the `dolibarr` app:
 
 ```bash
 dokku apps:create dolibarr
 ```
 
-## Configuration
+### 2. Configure the Database
 
-### Install, create and link MariaDB plugin
+Install, create, and link the MariaDB plugin to the app:
 
 ```bash
-# Install MariaDb plugin on Dokku
+# Install MariaDB plugin
 dokku plugin:install https://github.com/dokku/dokku-mariadb.git mariadb
-```
 
-```bash
-# Create running plugin
+# Create a MariaDB instance
 dokku mariadb:create dolibarr
-```
 
-```bash
-# Link plugin to the main app
+# Link the database to the app
 dokku mariadb:link dolibarr dolibarr
 ```
 
-## Persistent storage
+### 3. Configure Persistent Storage
 
-To ensure that uploaded data persists between restarts, we create a folder on the host machine, grant write permissions to the user defined in the Dockerfile, and instruct Dokku to mount it to the app container. Follow these steps:
-
-```bash
-dokku storage:ensure-directory theoldclunker-dolibarr-documents --chown false
-dokku storage:mount theoldclunker-dolibarr /var/lib/dokku/data/storage/theoldclunker-dolibarr-documents:/var/www/documents
-```
+To persist uploaded data between restarts, create folders on the host machine and mount them to the app container:
 
 ```bash
-dokku storage:ensure-directory theoldclunker-dolibarr-custom --chown false
-dokku storage:mount theoldclunker-dolibarr /var/lib/dokku/data/storage/theoldclunker-dolibarr-custom:/var/www/html/custom
+# Documents directory
+dokku storage:ensure-directory dolibarr-documents --chown false
+dokku storage:mount dolibarr /var/lib/dokku/data/storage/dolibarr-documents:/var/www/documents
+
+# Custom directory
+dokku storage:ensure-directory dolibarr-custom --chown false
+dokku storage:mount dolibarr /var/lib/dokku/data/storage/dolibarr-custom:/var/www/html/custom
 ```
 
-## Domain setup
+### 4. Configure the Domain and Ports
 
-To enable routing for the Dolibarr app, we need to configure the domain. Execute the following command:
+Set the domain for your app to enable routing:
 
 ```bash
 dokku domains:set dolibarr dolibarr.example.com
 ```
 
-## Push Dolibarr to Dokku
-
-### Grabbing the repository
-
-Begin by cloning this repository onto your local machine.
+Map the internal port `80` to the external port `80`:
 
 ```bash
-# Via SSH
-git clone git@github.com:d1ceward/dolibarr_on_dokku.git
-
-# Via HTTPS
-git clone https://github.com/d1ceward/dolibarr_on_dokku.git
+dokku ports:set grafana http:80:80
 ```
 
-### Set up git remote
+### 5. Deploy the App
 
-Now, set up your Dokku server as a remote repository.
+You can deploy the app to your Dokku server using one of the following methods:
+
+#### Option 1: Deploy Using `dokku git:sync`
+
+If your repository is hosted on a remote Git server with an HTTPS URL, you can deploy the app directly to your Dokku server using `dokku git:sync`. This method also triggers a build process automatically. Run the following command:
 
 ```bash
-git remote add dokku dokku@example.com:dolibarr
+dokku git:sync --build dolibarr https://github.com/d1ceward-on-dokku/dolibarr_on_dokku.git
 ```
 
-### Push Dolibarr
+#### Option 2: Clone the Repository and Push Manually
 
-Now, you can push the Dolibarr app to Dokku. Ensure you have completed this step before moving on to the [next section](#ssl-certificate).
+If you prefer to work with the repository locally, you can clone it to your machine and push it to your Dokku server manually:
 
-```bash
-git push dokku master
-```
+1. Clone the repository:
 
-## SSL certificate
+    ```bash
+    # Via SSH
+    git clone git@github.com:d1ceward-on-dokku/dolibarr_on_dokku.git
 
-Lastly, let's obtain an SSL certificate from [Let's Encrypt](https://letsencrypt.org/).
+    # Via HTTPS
+    git clone https://github.com/d1ceward-on-dokku/dolibarr_on_dokku.git
+    ```
 
-```bash
-# Install letsencrypt plugin
-dokku plugin:install https://github.com/dokku/dokku-letsencrypt.git
+2. Add your Dokku server as a Git remote:
 
-# Set certificate contact email
-dokku letsencrypt:set dolibarr email you@example.com
+    ```bash
+    git remote add dokku dokku@example.com:dolibarr
+    ```
 
-# Generate certificate
-dokku letsencrypt:enable dolibarr
-```
+3. Push the app to your Dokku server:
 
-## Wrapping up
+    ```bash
+    git push dokku master
+    ```
 
-Congratulations! Your Dolibarr instance is now up and running, and you can access it at [https://dolibarr.example.com](https://dolibarr.example.com).
+Choose the method that best suits your workflow.
+
+### 6. Enable SSL (Optional)
+
+Secure your app with an SSL certificate from Let's Encrypt:
+
+1. Add the HTTPS port:
+
+    ```bash
+    dokku ports:add grafana https:443:9000
+    ```
+
+2. Install the Let's Encrypt plugin:
+
+    ```bash
+    dokku plugin:install https://github.com/dokku/dokku-letsencrypt.git
+    ```
+
+3. Set the contact email for Let's Encrypt:
+
+    ```bash
+    dokku letsencrypt:set dolibarr email you@example.com
+    ```
+
+4. Enable Let's Encrypt for the app:
+
+    ```bash
+    dokku letsencrypt:enable dolibarr
+    ```
+
+## Wrapping Up
+
+Congratulations! Your Dolibarr instance is now up and running. You can access it at [https://dolibarr.example.com](https://dolibarr.example.com).
+
+Happy managing!

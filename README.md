@@ -2,9 +2,10 @@
 
 [![Dolibarr](https://img.shields.io/badge/Dolibarr-22.0.4-blue.svg)](https://github.com/Dolibarr/dolibarr/releases/tag/22.0.4)
 [![Dokku](https://img.shields.io/badge/Dokku-Repo-blue.svg)](https://github.com/dokku/dokku)
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/d1ceward-on-dokku/dolibarr_on_dokku/graphs/commit-activity)
 
 # Run Dolibarr on Dokku
+
+> **⚠️ This repository has been archived and is no longer maintained.** I am no longer using Dolibarr or Dokku, so this project will not receive any further updates, bug fixes, or security patches. Feel free to fork it if you'd like to continue development.
 
 ## Overview
 
